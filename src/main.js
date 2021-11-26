@@ -1,5 +1,6 @@
 import {MenuScene} from "./scenes/MenuScene.js";
 import {LevelScene} from "./scenes/LevelScene.js";
+import {PlayScene} from "./scenes/PlayScene.js";
 
 let game = new Phaser.Game({
     type: Phaser.AUTO,
@@ -7,7 +8,7 @@ let game = new Phaser.Game({
     height: 480,
     backgroundColor: '#23BF8E',
     scene: [
-       MenuScene, LevelScene
+       MenuScene, LevelScene, PlayScene
     ]
 });
 
