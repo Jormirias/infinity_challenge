@@ -14,14 +14,21 @@ export class PlayScene extends Phaser.Scene {
         this.load.tilemapTiledJSON("level_two", "../assets/tilemaps/level_two.json");
         this.load.tilemapTiledJSON("level_three", "../assets/tilemaps/level_three.json");
         this.load.tilemapTiledJSON("level_four", "../assets/tilemaps/level_four.json");
+        this.load.audio("levelComplete", "../assets/audio/sfx/LevelComplete.wav");
+        this.load.audio("rotateShape", "../assets/audio/sfx/RotateShape.ogg");
+        this.load.audio("shapeAppear", "../assets/audio/sfx/ShapeAppear.ogg");
     }
     create() {
+        let shapeAppear = this.sound.add("shapeAppear");
+        shapeAppear.play();
 
         let levelIcon = this.add.image(300, 400, "horiz_bars");
         levelIcon.setInteractive();
         levelIcon.on("pointerup", () => {
             this.scene.start("LEVELS");
         })
+        levelIcon.setScale(3);
+        levelIcon.setPosition((window.innerWidth/2) - levelIcon.width/6, window.innerHeight*9/10);
 
         let level_key = "";
         let level_solution = "";
@@ -79,13 +86,15 @@ export class PlayScene extends Phaser.Scene {
 
         if (this.level_number != "end") {
             //title
-            this.add.text(0, 0, "LEVEL " + this.level_number, {fontSize: 66.3, fontFamily: 'nonstop_full'});
+            this.playTitle = this.add.text(0, 0, "LEVEL " + this.level_number, {fontSize:160 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+            this.playTitle.setPosition(window.innerWidth, window.innerHeight/15);
 
             //generates level map from tilemaps
             let level = this.make.tilemap({key: level_key});
             let tileset = level.addTilesetImage('road_tileset', 'road_tiles');
             let layer = level.createLayer('road_layer', tileset);
-            let tileArray = layer.getTilesWithin(0, 0, 4, 4, {isNotEmpty: true})
+            let tileArray = layer.getTilesWithin(0, 0, 4, 4, {isNotEmpty: true});
+            layer.setPosition((window.innerWidth/2) - layer.width/2, window.innerHeight/15 + this.playTitle.height);
 
             //generates containers to detect interaction
             for (let i = 0; i < tileArray.length; i++) {
@@ -97,14 +106,22 @@ export class PlayScene extends Phaser.Scene {
             }
         }
         else {
-            this.add.text(0, 0, "ALL", {fontSize: 66.3, fontFamily: 'nonstop_full'});
-            this.add.text(0, 100, "LEVELS", {fontSize: 66.3, fontFamily: 'nonstop_full'});
-            this.add.text(0, 200, "CLEARED!", {fontSize: 66.3, fontFamily: 'nonstop_full'});
-            this.add.text(0, 300, "=)", {fontSize: 66.3, fontFamily: 'nonstop_full'});
+            let endMessage1 = this.add.text(0, 0, "ALL", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+            endMessage1.setPosition((window.innerWidth/2) - endMessage1.width/2, window.innerHeight*1/10);
+            let endMessage2 = this.add.text(0, 100, "LEVELS", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+            endMessage2.setPosition((window.innerWidth/2) - endMessage2.width/2, window.innerHeight*1/10+endMessage1.height);
+            let endMessage3 = this.add.text(0, 200, "CLEARED!", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+            endMessage3.setPosition((window.innerWidth/2) - endMessage3.width/2, window.innerHeight*1/10+endMessage2.height*2);
+            let endMessage4 = this.add.text(0, 300, "=)", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+            endMessage4.setPosition((window.innerWidth/2) - endMessage4.width/2, (window.innerHeight*1/10)+(endMessage3.height*3));
         }
     }
     //rotates sprite and compares puzzle to solution
     spriteRotator(levelSolution, tileArray, tile, next_level) {
+        let levelComplete = this.sound.add("levelComplete");
+        let rotateShape = this.sound.add("rotateShape");
+
+        rotateShape.play();
         tile.rotation += 3.14159265359/2;
 
         for (let i = 0; i < tileArray.length; i++) {
@@ -116,11 +133,15 @@ export class PlayScene extends Phaser.Scene {
                 this.scene.start("PLAY", {
                     "level_number": next_level
                 });
+                levelComplete.play();
             }
 
         }
-        console.debug(tile.rotation);
-        console.debug(Math.round(Math.sin(tile.rotation)));
-        console.debug(Math.round(Math.cos(tile.rotation)));
+    }
+
+    update() {
+        if (this.playTitle.x > (window.innerWidth/2) - this.playTitle.width/2) {
+            this.playTitle.x -= 20;
+        }
     }
 }
