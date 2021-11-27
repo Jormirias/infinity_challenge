@@ -13,6 +13,7 @@ export class MenuScene extends Phaser.Scene {
     }
     create() {
         let ost1 = this.sound.add("ost");
+        ost1.loop = true;
         ost1.play();
         ost1.setVolume(0.3);
         let clickSound = this.sound.add("click");
