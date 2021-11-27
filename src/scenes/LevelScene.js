@@ -17,6 +17,8 @@ export class LevelScene extends Phaser.Scene {
         let levelTitle = this.add.text(0,0, "LEVEL SELECTION", {fontSize:160 * window.innerWidth / 1800, fontFamily: 'nonstop_full' });
         levelTitle.setPosition((window.innerWidth/2) - levelTitle.width/2, window.innerHeight/10);
 
+        let rectangleBG = this.add.rectangle( window.innerWidth/2, window.innerHeight*0.5 + levelTitle.height, window.innerWidth*0.8, window.innerHeight*0.75, 0x84c2ae );
+
         let levelOneSelect = this.createLevelButton (-300, "1");
         levelOneSelect.setInteractive();
         levelOneSelect.on("pointerup", () => {
