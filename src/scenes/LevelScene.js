@@ -59,4 +59,8 @@ export class LevelScene extends Phaser.Scene {
         ]).setSize(50*3, 50*3);
         return container;
     }
+
+    update() {
+
+    }
 }

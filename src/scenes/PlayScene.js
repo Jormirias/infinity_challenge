@@ -86,15 +86,15 @@ export class PlayScene extends Phaser.Scene {
 
         if (this.level_number != "end") {
             //title
-            let playTitle = this.add.text(0, 0, "LEVEL " + this.level_number, {fontSize:160 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
-            playTitle.setPosition((window.innerWidth/2) - playTitle.width/2, window.innerHeight/15);
+            this.playTitle = this.add.text(0, 0, "LEVEL " + this.level_number, {fontSize:160 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+            this.playTitle.setPosition(window.innerWidth, window.innerHeight/15);
 
             //generates level map from tilemaps
             let level = this.make.tilemap({key: level_key});
             let tileset = level.addTilesetImage('road_tileset', 'road_tiles');
             let layer = level.createLayer('road_layer', tileset);
             let tileArray = layer.getTilesWithin(0, 0, 4, 4, {isNotEmpty: true});
-            layer.setPosition((window.innerWidth/2) - layer.width/2, window.innerHeight/15 + playTitle.height);
+            layer.setPosition((window.innerWidth/2) - layer.width/2, window.innerHeight/15 + this.playTitle.height);
 
             //generates containers to detect interaction
             for (let i = 0; i < tileArray.length; i++) {
@@ -137,8 +137,11 @@ export class PlayScene extends Phaser.Scene {
             }
 
         }
-        console.debug(tile.rotation);
-        console.debug(Math.round(Math.sin(tile.rotation)));
-        console.debug(Math.round(Math.cos(tile.rotation)));
+    }
+
+    update() {
+        if (this.playTitle.x > (window.innerWidth/2) - this.playTitle.width/2) {
+            this.playTitle.x -= 20;
+        }
     }
 }
