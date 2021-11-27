@@ -14,8 +14,13 @@ export class PlayScene extends Phaser.Scene {
         this.load.tilemapTiledJSON("level_two", "../assets/tilemaps/level_two.json");
         this.load.tilemapTiledJSON("level_three", "../assets/tilemaps/level_three.json");
         this.load.tilemapTiledJSON("level_four", "../assets/tilemaps/level_four.json");
+        this.load.audio("levelComplete", "../assets/audio/sfx/LevelComplete.wav");
+        this.load.audio("rotateShape", "../assets/audio/sfx/RotateShape.ogg");
+        this.load.audio("shapeAppear", "../assets/audio/sfx/ShapeAppear.ogg");
     }
     create() {
+        let shapeAppear = this.sound.add("shapeAppear");
+        shapeAppear.play();
 
         let levelIcon = this.add.image(300, 400, "horiz_bars");
         levelIcon.setInteractive();
@@ -113,6 +118,10 @@ export class PlayScene extends Phaser.Scene {
     }
     //rotates sprite and compares puzzle to solution
     spriteRotator(levelSolution, tileArray, tile, next_level) {
+        let levelComplete = this.sound.add("levelComplete");
+        let rotateShape = this.sound.add("rotateShape");
+
+        rotateShape.play();
         tile.rotation += 3.14159265359/2;
 
         for (let i = 0; i < tileArray.length; i++) {
@@ -124,6 +133,7 @@ export class PlayScene extends Phaser.Scene {
                 this.scene.start("PLAY", {
                     "level_number": next_level
                 });
+                levelComplete.play();
             }
 
         }

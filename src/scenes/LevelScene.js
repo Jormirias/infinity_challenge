@@ -9,8 +9,11 @@ export class LevelScene extends Phaser.Scene {
     }
     preload() {
         this.load.image("level_button", "../assets/sprites/UI/red_button08.png");
+        this.load.audio("click", "../assets/audio/sfx/DefaultClick.ogg");
     }
     create() {
+        let clickSound = this.sound.add("click");
+
         let levelTitle = this.add.text(0,0, "LEVEL SELECTION", {fontSize:160 * window.innerWidth / 1800, fontFamily: 'nonstop_full' });
         levelTitle.setPosition((window.innerWidth/2) - levelTitle.width/2, window.innerHeight/10);
 
@@ -20,6 +23,7 @@ export class LevelScene extends Phaser.Scene {
             this.scene.start("PLAY", {
                 "level_number": "1"
             });
+            clickSound.play();
         })
         let levelTwoSelect = this.createLevelButton (-100, "2");
         levelTwoSelect.setInteractive();
@@ -27,6 +31,7 @@ export class LevelScene extends Phaser.Scene {
             this.scene.start("PLAY", {
                 "level_number": "2"
             });
+            clickSound.play();
         })
         let levelThreeSelect = this.createLevelButton (100, "3");
         levelThreeSelect.setInteractive();
@@ -34,6 +39,7 @@ export class LevelScene extends Phaser.Scene {
             this.scene.start("PLAY", {
                 "level_number": "3"
             });
+            clickSound.play();
         })
         let levelFourSelect = this.createLevelButton (300, "4");
         levelFourSelect.setInteractive();
@@ -41,6 +47,7 @@ export class LevelScene extends Phaser.Scene {
             this.scene.start("PLAY", {
                 "level_number": "4"
             });
+            clickSound.play();
         })
     }
     createLevelButton (x, number) {
