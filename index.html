@@ -5,10 +5,283 @@
     <title>Road Connect Demo</title>
     <link rel="preload" as="font" href="./assets/fonts/nonstop.ttf" type="font/ttf" crossOrigin="anonymous"/>
     <link rel="preload" as="font" href="./assets/fonts/nonstop_full.ttf" type="font/ttf" crossOrigin="anonymous"/>
-    <link rel="stylesheet" href="style.css" type="text/css" />
+    <style>
+        @font-face {
+            font-family: nonstop;
+            src: url('./assets/fonts/nonstop.ttf');
+        }
+
+        @font-face {
+            font-family: nonstop_full;
+            src: url('./assets/fonts/nonstop_full.ttf');
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-    <script src="./lib/phaser-arcade-physics.min.js"></script>
-    <script type="module" src="./src/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser-arcade-physics.min.js"></script>
+    <script>
+        class MenuScene extends Phaser.Scene {
+            constructor() {
+                super({
+                    key: "MENU"
+                })
+            }
+            preload() {
+                this.load.audio("ost", "../assets/audio/music/Funky Chill 2 loop.wav");
+                this.load.audio("click", "../assets/audio/sfx/DefaultClick.ogg");
+            }
+            create() {
+                let ost1 = this.sound.add("ost");
+                ost1.loop = true;
+                ost1.play();
+                ost1.setVolume(0.3);
+                let clickSound = this.sound.add("click");
+
+                this.firstTitle = this.add.text(0,0, "ROAD", {fontSize:250 * window.innerWidth / 1800, fontFamily: 'nonstop' });
+                this.firstTitle.setPosition(-60, window.innerHeight/7);
+                this.secondTitle = this.add.text(0,150, "CONNECT", {fontSize:250 * window.innerWidth / 1800, fontFamily: 'nonstop' });
+                this.secondTitle.setPosition(window.innerWidth, (window.innerHeight/7) + this.secondTitle.height);
+                let playButton = this.add.text(0, 0, "PLAY", {fontSize:250 * window.innerWidth / 1800, fontFamily: 'nonstop_full' });
+                playButton.setPosition((window.innerWidth/2) - playButton.width/2, window.innerHeight*4/5);
+
+                playButton.setInteractive();
+                playButton.on("pointerup", () => {
+                    clickSound.play();
+                    this.scene.start("LEVELS");
+                })
+            }
+            update() {
+                if (this.firstTitle.x < (window.innerWidth/2) - this.firstTitle.width/2) {
+                    this.firstTitle.x += 20;
+                }
+                if (this.secondTitle.x > (window.innerWidth/2) - this.secondTitle.width/2) {
+                    this.secondTitle.x -= 20;
+                }
+            }
+        }
+        class LevelScene extends Phaser.Scene {
+            constructor() {
+                super({
+                    key: "LEVELS"
+                })
+            }
+            preload() {
+                this.load.image("level_button", "../assets/sprites/UI/red_button08.png");
+                this.load.audio("click", "../assets/audio/sfx/DefaultClick.ogg");
+            }
+            create() {
+                let clickSound = this.sound.add("click");
+
+                let levelTitle = this.add.text(0,0, "LEVEL SELECTION", {fontSize:160 * window.innerWidth / 1800, fontFamily: 'nonstop_full' });
+                levelTitle.setPosition((window.innerWidth/2) - levelTitle.width/2, window.innerHeight/10);
+
+                let rectangleBG = this.add.rectangle( window.innerWidth/2, window.innerHeight*0.5 + levelTitle.height, window.innerWidth*0.8, window.innerHeight*0.75, 0x84c2ae );
+
+                let levelOneSelect = this.createLevelButton (-300, "1");
+                levelOneSelect.setInteractive();
+                levelOneSelect.on("pointerup", () => {
+                    this.scene.start("PLAY", {
+                        "level_number": "1"
+                    });
+                    clickSound.play();
+                })
+                let levelTwoSelect = this.createLevelButton (-100, "2");
+                levelTwoSelect.setInteractive();
+                levelTwoSelect.on("pointerup", () => {
+                    this.scene.start("PLAY", {
+                        "level_number": "2"
+                    });
+                    clickSound.play();
+                })
+                let levelThreeSelect = this.createLevelButton (100, "3");
+                levelThreeSelect.setInteractive();
+                levelThreeSelect.on("pointerup", () => {
+                    this.scene.start("PLAY", {
+                        "level_number": "3"
+                    });
+                    clickSound.play();
+                })
+                let levelFourSelect = this.createLevelButton (300, "4");
+                levelFourSelect.setInteractive();
+                levelFourSelect.on("pointerup", () => {
+                    this.scene.start("PLAY", {
+                        "level_number": "4"
+                    });
+                    clickSound.play();
+                })
+            }
+            createLevelButton (x, number) {
+                let buttonSprite = this.add.image(0,0, "level_button");
+                buttonSprite.setScale(3);
+                let container = this.add.container((window.innerWidth/2) - 25 + x, window.innerHeight/10 + 300, [
+                    buttonSprite,
+                    this.add.text(-20,-40, number, {fontSize:130000/window.innerWidth, fontFamily: 'nonstop_full' })
+                ]).setSize(50*3, 50*3);
+                return container;
+            }
+        }
+        class PlayScene extends Phaser.Scene {
+            constructor() {
+                super({
+                    key: "PLAY"
+                })
+            }
+            init(data) {
+                this.level_number = data.level_number;
+            }
+            preload() {
+                this.load.image("horiz_bars", "../assets/sprites/UI/barsHorizontal.png");
+                this.load.image('road_tiles', '../assets/tilemaps/road_tileset.png')
+                this.load.tilemapTiledJSON("level_one", "../assets/tilemaps/level_one.json");
+                this.load.tilemapTiledJSON("level_two", "../assets/tilemaps/level_two.json");
+                this.load.tilemapTiledJSON("level_three", "../assets/tilemaps/level_three.json");
+                this.load.tilemapTiledJSON("level_four", "../assets/tilemaps/level_four.json");
+                this.load.audio("levelComplete", "../assets/audio/sfx/LevelComplete.wav");
+                this.load.audio("rotateShape", "../assets/audio/sfx/RotateShape.ogg");
+                this.load.audio("shapeAppear", "../assets/audio/sfx/ShapeAppear.ogg");
+            }
+            create() {
+                let shapeAppear = this.sound.add("shapeAppear");
+                shapeAppear.play();
+
+                let levelIcon = this.add.image(300, 400, "horiz_bars");
+                levelIcon.setInteractive();
+                levelIcon.on("pointerup", () => {
+                    this.scene.start("LEVELS");
+                })
+                levelIcon.setScale(3);
+                levelIcon.setPosition((window.innerWidth/2) - levelIcon.width/6, window.innerHeight*9/10);
+
+                let level_key = "";
+                let level_solution = "";
+                let next_level = "";
+                if (this.level_number == "1") {
+                    level_key = "level_one";
+                    level_solution = [
+                        {sin: 0, cos: 1},
+                        {sin: 1, cos: 0},
+                        {sin: -1, cos: 0},
+                        {sin: 0, cos: -1}
+                    ];
+                    next_level = "2";
+                } else if (this.level_number == "2") {
+                    level_key = "level_two"
+                    next_level = "3";
+                    level_solution = [
+                        {sin: 0, cos: 1},
+                        {sin: 0, cos: -1},
+                        {sin: -1, cos: 0},
+                        {sin: 1, cos: 0},
+                        {sin: 0, cos: 1},
+                        {sin: 0, cos: -1}
+                    ];
+                } else if (this.level_number == "3") {
+                    level_key = "level_three"
+                    next_level = "4";
+                    level_solution = [
+                        {sin: 0, cos: 1},
+                        {sin: 1, cos: 0},
+                        {sin: -1, cos: 0},
+                        {sin: 0},
+                        {sin: 0}
+                    ];
+                } else if (this.level_number == "4") {
+                    level_key = "level_four"
+                    next_level = "end";
+                    level_solution = [
+                        {sin: 1, cos: 0},
+                        {sin: 1, cos: 0},
+                        {sin: 0, cos: 1},
+                        {sin: 0, cos: -1},
+                        {sin: 0, cos: 1},
+                        {sin: 1, cos: 0},
+                        {},
+                        {},
+                        {},
+                        {},
+                        {sin: -1, cos: 0},
+                        {sin: 0, cos: -1},
+                        {sin: -1, cos: 0},
+                        {sin: 0, cos: -1}
+                    ];
+                }
+
+                if (this.level_number != "end") {
+                    //title
+                    this.playTitle = this.add.text(0, 0, "LEVEL " + this.level_number, {fontSize:160 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+                    this.playTitle.setPosition(window.innerWidth, window.innerHeight/15);
+
+                    //generates level map from tilemaps
+                    let level = this.make.tilemap({key: level_key});
+                    let tileset = level.addTilesetImage('road_tileset', 'road_tiles');
+                    let layer = level.createLayer('road_layer', tileset);
+                    let tileArray = layer.getTilesWithin(0, 0, 4, 4, {isNotEmpty: true});
+                    layer.setPosition((window.innerWidth/2) - layer.width/2, window.innerHeight/15 + this.playTitle.height);
+
+                    //generates containers to detect interaction
+                    for (let i = 0; i < tileArray.length; i++) {
+                        let container = this.add.container(layer.tileToWorldX(tileArray[i].x) + 64, layer.tileToWorldY(tileArray[i].y) + 64).setSize(128, 128);
+                        container.setInteractive();
+                        container.on("pointerup", () => {
+                            this.spriteRotator(level_solution, tileArray, tileArray[i], next_level);
+                        })
+                    }
+                }
+                else {
+                    let endMessage1 = this.add.text(0, 0, "ALL", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+                    endMessage1.setPosition((window.innerWidth/2) - endMessage1.width/2, window.innerHeight*1/10);
+                    let endMessage2 = this.add.text(0, 100, "LEVELS", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+                    endMessage2.setPosition((window.innerWidth/2) - endMessage2.width/2, window.innerHeight*1/10+endMessage1.height);
+                    let endMessage3 = this.add.text(0, 200, "CLEARED!", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+                    endMessage3.setPosition((window.innerWidth/2) - endMessage3.width/2, window.innerHeight*1/10+endMessage2.height*2);
+                    let endMessage4 = this.add.text(0, 300, "=)", {fontSize:130 * window.innerWidth / 1800, fontFamily: 'nonstop_full'});
+                    endMessage4.setPosition((window.innerWidth/2) - endMessage4.width/2, (window.innerHeight*1/10)+(endMessage3.height*3));
+                }
+            }
+            //rotates sprite and compares puzzle to solution
+            spriteRotator(levelSolution, tileArray, tile, next_level) {
+                let levelComplete = this.sound.add("levelComplete");
+                let rotateShape = this.sound.add("rotateShape");
+
+                rotateShape.play();
+                tile.rotation += 3.14159265359/2;
+
+                for (let i = 0; i < tileArray.length; i++) {
+                    if (typeof levelSolution[i].sin !== 'undefined' && levelSolution[i].sin != Math.round(Math.sin(tileArray[i].rotation)))
+                        break;
+                    if (typeof levelSolution[i].cos !== 'undefined' && levelSolution[i].cos != Math.round(Math.cos(tileArray[i].rotation)))
+                        break;
+                    else if (i == tileArray.length - 1){
+                        this.scene.start("PLAY", {
+                            "level_number": next_level
+                        });
+                        levelComplete.play();
+                    }
+
+                }
+            }
+
+            update() {
+                if (this.playTitle.x > (window.innerWidth/2) - this.playTitle.width/2) {
+                    this.playTitle.x -= 20;
+                }
+            }
+        }
+
+        let game = new Phaser.Game({
+            type: Phaser.CANVAS,
+            width: window.innerWidth * window.devicePixelRatio,
+            height: window.innerHeight * window.devicePixelRatio,
+            maxHeight: 300 * window.devicePixelRatio,
+            backgroundColor: '#23BF8E',
+            scene: [
+                MenuScene, LevelScene, PlayScene
+            ]
+        });
+    </script>
 </body>
 </html>
